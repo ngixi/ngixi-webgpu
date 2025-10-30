@@ -1,0 +1,12 @@
+﻿.zig-cache/
+zig-out/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.lib
+*.pdb
+*.ilk
+*.exp

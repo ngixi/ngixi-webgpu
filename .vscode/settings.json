@@ -1,0 +1,44 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "zig-cache/**": true,
+    "zig-out/**": false
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "*.zig": "${capture}.exe,${capture}.o,${capture}.obj",
+    "build.zig": "build.zig.zon,zig-cache,zig-out",
+    "*.md": "${capture}.html",
+    "*.ts": "${capture}.js,${capture}.d.ts.map,${capture}.d.ts,${capture}.js.map",
+    "*.js": "${capture}.js.map,${capture}.min.js,${capture}.d.ts",
+    "*.jsx": "${capture}.js",
+    "*.tsx": "${capture}.ts,${capture}.js",
+    "tsconfig.json": "tsconfig.*.json",
+    "package.json": "package-lock.json,yarn.lock,pnpm-lock.yaml,bun.lockb,.npmrc,.yarnrc*,turbo.json",
+    ".gitignore": ".gitattributes,.gitmodules,.gitmessage,.mailmap,.git-blame*",
+    "readme*": "authors,backers*,changelog*,citation*,code_of_conduct*,codeowners,contributing*,contributors,copying*,credits,governance.md,history.md,license*,maintainers,readme*,security.md,sponsors*",
+    "*.c": "${capture}.h,${capture}.hpp"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "zig-cache/**": true,
+    "zig-out/**": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "zig-cache/**": true,
+    "zig-out/**": true
+  },
+  "editor.formatOnSave": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4
+}
