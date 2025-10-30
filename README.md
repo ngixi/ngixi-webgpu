@@ -49,11 +49,15 @@ This allows consumers to pin to specific Dawn versions with confidence.
 
 **Current Status**: Not yet published. No releases available.
 
-## Tracking Upstream
+## Tracking Upstream (Planned)
 
-This wrapper tracks Google Dawn releases. When ngixi-builds updates to a new Dawn tag, this package updates accordingly.
+**Intent**: This wrapper will track Google Dawn releases from their GitHub mirror at `github.com/google/dawn`.
 
-**Current Dawn Version**: Check ngixi-builds for the active tag (approximately `v20251026.130842`)
+When implemented, ngixi-builds will compile specific Dawn tags, and this package will release matching versions.
+
+**Current**: Not tracking yet—manual/ad-hoc Dawn version selection
+
+**Future**: Automated tracking of Dawn stable releases
 
 ## Status
 
