@@ -1,40 +1,43 @@
 # ngixi-webgpu
 
-> **🚧 ACTIVE WIP 🚧**  
-> *Zig bindings for Google Dawn WebGPU. Works on Windows. Linux/macOS support planned.*
+> **🚧 EARLY STAGE 🚧**  
+> *Zig wrapper for Google Dawn WebGPU. Currently just C header linkage—Zig API wrapper not started yet.*
 
 ## What This Is
 
-Zig wrapper around Google's Dawn WebGPU implementation for cross-platform GPU rendering.
+A consumable Zig package that wraps Google Dawn WebGPU. The intent is to provide a clean Zig API while tracking upstream Dawn releases.
 
-**Status**: 🔥 Active development, Windows-focused while expanding to other platforms
+**Scope**: Pure WebGPU wrapper only—no windowing, no other dependencies. Just Dawn.
 
-## What Actually Works
+## Current Status
 
-- ✅ Windows Dawn DLL integration
-- ✅ Basic WebGPU Zig API  
-- ✅ zigwin32 bindings for Windows-specific code
-- ✅ DLL fetching from ngixi-builds
+**What Works**:
+- ✅ Windows builds from ngixi-builds (Dawn DLLs + headers)
+- ✅ C header linking via `@cImport` in `raw` module
+- ✅ Basic build system setup
 
-## What's Planned/TBD
+**What's Not Started**:
+- ❌ Zig API wrapper (still using raw C imports)
+- ❌ Linux builds (ngixi-builds doesn't have this yet)
+- ❌ macOS builds (ngixi-builds doesn't have this yet)
 
-- 📋 SDL3 components for cross-platform windowing (migrating from Zephyr)
-- 📋 Linux Dawn builds
-- 📋 macOS Dawn builds (need Mac build infrastructure)
-- 📋 More complete WebGPU API coverage
+## Architecture
+
+1. **ngixi-builds** compiles Dawn from Google's upstream tags
+2. **ngixi-webgpu** (this repo) fetches those prebuilt binaries
+3. Provides C headers via `@cImport` (current)
+4. Will provide idiomatic Zig API wrapper (future)
 
 ## Quick Start
 
 ```bash
-zig build        # Build the project
-zig build run    # Run test application
+zig build        # Fetch Dawn DLLs, build
+zig build run    # Run test (if any)
 ```
 
-**Requirements**: Just Zig 0.15.1+ (build system fetches Dawn DLLs automatically)
+**Requirements**: Zig 0.15.1+
 
 ## Using as a Dependency
-
-Add to `build.zig.zon`:
 
 ```zig
 .dependencies = .{
@@ -44,21 +47,22 @@ Add to `build.zig.zon`:
 },
 ```
 
-See source code for integration examples. API is minimal and evolving.
+Currently exposes raw C API. Zig wrapper TBD.
 
-## Architecture
+## Tracking Upstream
 
-- Fetches prebuilt Dawn DLLs from ngixi-builds
-- Provides thin Zig wrapper around WebGPU C API
-- Windows-first, cross-platform intent
+This wrapper tracks Google Dawn releases. When ngixi-builds updates to a new Dawn tag, this package updates accordingly.
+
+**Current Dawn Version**: Check ngixi-builds for the active tag (approximately `v20251026.130842`)
 
 ## Status
 
-**Current**: Basic Windows WebGPU instance creation works  
-**TBD**: Most everything else—API coverage, platform support, windowing integration
+- **Platform Support**: Windows only (via ngixi-builds)
+- **API**: Raw C headers only (no Zig wrapper yet)
+- **Upstream**: Tracking Google Dawn stable tags
 
-Part of the [NGIXI](https://github.com/ngixi) experimental multimedia framework ecosystem.
+Part of the [NGIXI](https://github.com/ngixi) ecosystem.
 
 ---
 
-**Note**: This is research/prototype code. Expect breaking changes and rapid iteration.
+**Note**: This is a pure WebGPU wrapper. No windowing, no SDL, no other dependencies. Just Dawn.
