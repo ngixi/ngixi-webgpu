@@ -30,6 +30,8 @@ A consumable Zig package that wraps Google Dawn WebGPU. The intent is to provide
 
 ## Quick Start
 
+**Not yet usable as a dependency.** Currently in early development.
+
 ```bash
 zig build        # Fetch Dawn DLLs, build
 zig build run    # Run test (if any)
@@ -37,17 +39,15 @@ zig build run    # Run test (if any)
 
 **Requirements**: Zig 0.15.1+
 
-## Using as a Dependency
+## Release Strategy (Future)
 
-```zig
-.dependencies = .{
-    .webgpu = .{
-        .url = "https://github.com/ngixi/ngixi-webgpu/archive/<commit>.tar.gz",
-    },
-},
-```
+When ready, this package will be released with tags matching the Google Dawn version it was built and tested against.
 
-Currently exposes raw C API. Zig wrapper TBD.
+**Example**: Release `v20251026.130842` → tested against Google Dawn `v20251026.130842`
+
+This allows consumers to pin to specific Dawn versions with confidence.
+
+**Current Status**: Not yet published. No releases available.
 
 ## Tracking Upstream
 
