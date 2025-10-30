@@ -1,112 +1,64 @@
-# NGIXI Dawn WebGPU Zig API
+# ngixi-webgpu
 
-This Zig package provides a minimal Zig API for Google Dawn WebGPU, fetching the native DLL and providing Zig bindings with Win32 integration.
+> **🚧 ACTIVE WIP 🚧**  
+> *Zig bindings for Google Dawn WebGPU. Works on Windows. Linux/macOS support planned.*
 
-## What this does
+## What This Is
 
-- ✅ Fetches the Dawn WebGPU DLL from your ngixi-builds repository
-- ✅ Extracts the tarball into `zig-cache`
-- ✅ Provides Zig bindings for basic WebGPU operations
-- ✅ Links against the DLL at build time
-- ✅ Installs the DLL for runtime loading
-- ✅ Creates a working "Hello World" test that verifies DLL loading
-- ✅ **NEW**: Includes zigwin32 for Windows API access
-- ✅ **NEW**: Includes Zephyr for cross-platform windowing
-- ✅ **NEW**: Creates an empty window application
+Zig wrapper around Google's Dawn WebGPU implementation for cross-platform GPU rendering.
 
-## Dependencies
+**Status**: 🔥 Active development, Windows-focused while expanding to other platforms
 
-- **Dawn**: WebGPU implementation from Google
-- **zigwin32**: Windows API bindings for Zig
-- **Zephyr**: Cross-platform windowing library
+## What Actually Works
 
-## Files Created
+- ✅ Windows Dawn DLL integration
+- ✅ Basic WebGPU Zig API  
+- ✅ zigwin32 bindings for Windows-specific code
+- ✅ DLL fetching from ngixi-builds
 
-After `zig build`:
+## What's Planned/TBD
 
-- `zig-out/bin/dawn-test.exe` - Empty window application that loads and uses the DLL
-- `zig-out/bin/webgpu_dawn.dll` - The Dawn WebGPU DLL (copied for runtime)
-- `zig-out/include/dawn/webgpu.h` - C header file
+- 📋 SDL3 components for cross-platform windowing (migrating from Zephyr)
+- 📋 Linux Dawn builds
+- 📋 macOS Dawn builds (need Mac build infrastructure)
+- 📋 More complete WebGPU API coverage
 
-## Usage
-
-### Build and test
+## Quick Start
 
 ```bash
 zig build        # Build the project
-zig build run    # Run the empty window application (verifies DLL loading)
+zig build run    # Run test application
 ```
 
-### Using as a dependency in other projects
+**Requirements**: Just Zig 0.15.1+ (build system fetches Dawn DLLs automatically)
 
-Add this to your `build.zig.zon`:
+## Using as a Dependency
+
+Add to `build.zig.zon`:
 
 ```zig
 .dependencies = .{
-    .dawn = .{
-        .path = "path/to/this/package",
+    .webgpu = .{
+        .url = "https://github.com/ngixi/ngixi-webgpu/archive/<commit>.tar.gz",
     },
 },
 ```
 
-Then in your `build.zig`:
+See source code for integration examples. API is minimal and evolving.
 
-```zig
-const dawn_dep = b.dependency("dawn", .{});
-const dawn_module = dawn_dep.module("dawn");
-const zigwin32 = b.dependency("zigwin32", .{});
+## Architecture
 
-// Add to your executable
-exe.root_module.addImport("dawn", dawn_module);
-exe.root_module.addImport("win32", zigwin32.module("win32"));
-exe.root_module.addImport("zephyr", b.addModule("zephyr", .{
-    .root_source_file = b.path("src/zephyr/app.zig"),
-}));
-exe.root_module.addIncludePath(dawn_dep.path("windows-x64/include"));
-exe.root_module.addLibraryPath(dawn_dep.path("windows-x64/lib"));
-exe.linkSystemLibrary("webgpu_dawn");
-exe.linkLibC();
-
-// Copy the DLL to your output
-b.installBinFile(dawn_dep.path("windows-x64/bin/webgpu_dawn.dll"), "webgpu_dawn.dll");
-```
-
-### Zig API Usage
-
-```zig
-const dawn = @import("dawn");
-const win32 = @import("win32");
-const zephyr = @import("zephyr/app.zig");
-const WindowOptions = @import("zephyr/window.zig").WindowOptions;
-
-// Create a WebGPU instance
-const instance = dawn.createInstance(null);
-if (instance) |inst| {
-    // Use WebGPU...
-    dawn.instanceRelease(inst);
-}
-
-// Create a window
-const window_options = WindowOptions{
-    .title = "My WebGPU App",
-    .width = 800,
-    .height = 600,
-};
-
-const exit_code = try zephyr.runSingleWindow(std.heap.page_allocator, window_options, null);
-```
-
-## Current API
-
-The `src/dawn.zig` file provides:
-
-- `createInstance()` - Create WebGPU instance
-- `instanceRelease()` - Release instance
-- Basic type definitions for WebGPU objects
-- External function declarations for the DLL
+- Fetches prebuilt Dawn DLLs from ngixi-builds
+- Provides thin Zig wrapper around WebGPU C API
+- Windows-first, cross-platform intent
 
 ## Status
 
-✅ **WORKING**: DLL loads successfully, basic WebGPU instance creation works, Win32 APIs available, empty window application runs.
+**Current**: Basic Windows WebGPU instance creation works  
+**TBD**: Most everything else—API coverage, platform support, windowing integration
 
-This is a minimal implementation focused on getting the DLL loading and basic API working. More WebGPU functions can be added to `dawn.zig` as needed.
+Part of the [NGIXI](https://github.com/ngixi) experimental multimedia framework ecosystem.
+
+---
+
+**Note**: This is research/prototype code. Expect breaking changes and rapid iteration.
