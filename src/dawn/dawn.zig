@@ -1,17 +1,37 @@
 const std = @import("std");
-const raw = @import("raw/c.zig");
 
-// BARE MINIMUM WebGPU bindings to test DLL loading
-// Now using @cImport for automatic C binding
+// Main public API - re-export everything
+// This is the entry point for using Dawn WebGPU in Zig
 
-pub const WGPUInstance = raw.WGPUInstance;
-pub const WGPUInstanceDescriptor = raw.WGPUInstanceDescriptor;
+// === Core Objects (files as structs) ===
+pub const Instance = @import("core/instance.zig");
+pub const Adapter = @import("core/adapter.zig");
+pub const Device = @import("core/device.zig");
+pub const Queue = @import("core/queue.zig");
+pub const Surface = @import("core/surface.zig");
 
-// Wrapper functions
-pub fn createInstance(descriptor: ?*const WGPUInstanceDescriptor) WGPUInstance {
-    return raw.c.wgpuCreateInstance(descriptor);
-}
+// === Types ===
+pub const enums = @import("types/enums.zig");
+pub const structs = @import("types/structs.zig");
 
-pub fn instanceRelease(instance: WGPUInstance) void {
-    raw.c.wgpuInstanceRelease(instance);
+// Re-export commonly used types at the top level for convenience
+pub const BackendType = enums.BackendType;
+pub const AdapterType = enums.AdapterType;
+pub const PowerPreference = enums.PowerPreference;
+pub const TextureFormat = enums.TextureFormat;
+pub const PresentMode = enums.PresentMode;
+pub const FeatureName = enums.FeatureName;
+pub const Color = structs.Color;
+pub const Extent3D = structs.Extent3D;
+pub const Origin3D = structs.Origin3D;
+
+// === Raw C Bindings (for advanced users) ===
+pub const raw = @import("raw/c.zig");
+
+// === Version Info ===
+pub const version = "0.1.0";
+pub const api_name = "Dawn WebGPU";
+
+test "dawn imports" {
+    std.testing.refAllDecls(@This());
 }

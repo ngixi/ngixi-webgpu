@@ -4,7 +4,7 @@
 
 ### Files as Structs Pattern
 
-Zig allows files to be treated as structs when they have root-level fields and an `init` function. This eliminates redundant wrapping and provides a clean, idiomatic API.
+Zig allows files to be treated as structs when they have root-level fields with commas. This eliminates redundant wrapping and provides a clean, idiomatic API.
 
 **Example:**
 

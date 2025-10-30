@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
     const dawn_module = createDawnModule(b, dawn_dep, target, optimize);
 
     // Create main executable
-    const exe = createMainExecutable(b, target, optimize);
+    const exe = createMainExecutable(b, target, optimize, dawn_module);
     b.installArtifact(exe);
     setupRunStep(b, exe);
 
@@ -53,9 +53,9 @@ fn createDawnModule(
         .optimize = optimize,
     });
 
-    // Add include path for webgpu.h C header
+    // Add include path for webgpu.h
     dawn_module.addIncludePath(dawn_dep.path("windows-x64/include"));
-
+    
     // Link the library to the module itself
     dawn_module.addLibraryPath(dawn_dep.path("windows-x64/lib"));
     dawn_module.linkSystemLibrary("webgpu_dawn", .{});
@@ -68,7 +68,12 @@ fn createDawnModule(
 // Main Executable
 // ============================================================================
 
-fn createMainExecutable(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Step.Compile {
+fn createMainExecutable(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    dawn_module: *std.Build.Module,
+) *std.Build.Step.Compile {
     const exe = b.addExecutable(.{
         .name = "dawn-test",
         .root_module = b.createModule(.{
@@ -78,6 +83,13 @@ fn createMainExecutable(b: *std.Build, target: std.Build.ResolvedTarget, optimiz
         }),
     });
 
+    // Add Dawn module
+    exe.root_module.addImport("dawn", dawn_module);
+    
+    // Add include path for webgpu.h (needed for @cImport in dawn module)
+    const dawn_dep = b.dependency("dawn", .{});
+    exe.root_module.addIncludePath(dawn_dep.path("windows-x64/include"));
+    
     exe.linkLibC();
     return exe;
 }
@@ -114,8 +126,14 @@ fn createDawnTestExecutable(
         }),
     });
 
-    // Just import the dawn module - it already has library linked
+    // Import the dawn module
     test_exe.root_module.addImport("dawn", dawn_module);
+    
+    // Add include path for webgpu.h (needed for @cImport in dawn module)
+    const dawn_dep = b.dependency("dawn", .{});
+    test_exe.root_module.addIncludePath(dawn_dep.path("windows-x64/include"));
+    
+    test_exe.linkLibC();
 
     return test_exe;
 }

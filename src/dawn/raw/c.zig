@@ -1,7 +1,8 @@
 // Raw C bindings to WebGPU Dawn
-// This imports the official webgpu.h header from the Dawn dependency
+// This imports the webgpu.h header from the Dawn dependency
 
 pub const c = @cImport({
+    @cDefine("WGPU_SHARED_LIBRARY", "");
     @cInclude("webgpu.h");
 });
 
