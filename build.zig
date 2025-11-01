@@ -1,81 +1,55 @@
 const std = @import("std");
+const util = @import("build.util.zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Set up Dawn dependency and module
-    const dawn_dep = b.dependency("dawn", .{});
-    setupDawnDLLs(b, dawn_dep);
-    const dawn_module = createDawnModule(b, dawn_dep, target, optimize);
+    // 📋 Uncomment to see available dependencies during build
+    // util.printAvailableDependencies();
 
-    // Create main executable
-    const exe = createMainExecutable(b, target, optimize, dawn_module);
-    b.installArtifact(exe);
-    setupRunStep(b, exe);
-
-    // Create Dawn test executable
-    const test_exe = createDawnTestExecutable(b, target, optimize, dawn_module);
-    b.installArtifact(test_exe);
-    setupTestStep(b, test_exe);
-
-    // Add fetch step for DLLs
-    setupFetchStep(b);
-}
-
-// ============================================================================
-// Dawn Module Setup
-// ============================================================================
-
-fn setupDawnDLLs(b: *std.Build, dawn_dep: *std.Build.Dependency) void {
-    const dlls = [_]struct { src: []const u8, dst: []const u8 }{
-        .{ .src = "windows-x64/bin/webgpu_dawn.dll", .dst = "bin/webgpu_dawn.dll" },
-        .{ .src = "windows-x64/bin/dxcompiler.dll", .dst = "bin/dxcompiler.dll" },
-        .{ .src = "windows-x64/bin/dxil.dll", .dst = "bin/dxil.dll" },
-        .{ .src = "windows-x64/bin/d3dcompiler_47.dll", .dst = "bin/d3dcompiler_47.dll" },
+    // � Define our dependency requirements
+    const dependency_specs = [_]util.DependencySpec{
+        .{
+            .name = "dawn",
+            .is_target_specific = true,
+            .skippable = false, // Dawn is required for all targets we support
+        },
+        .{
+            .name = "zigwin32",
+            .is_target_specific = false,
+            .skippable = true, // Only needed on Windows
+            .required_os = &[_]std.Target.Os.Tag{.windows},
+        },
     };
 
-    for (dlls) |dll| {
-        const install_dll = b.addInstallFile(dawn_dep.path(dll.src), dll.dst);
-        b.getInstallStep().dependOn(&install_dll.step);
+    // 🛡️ Check all dependencies comprehensively
+    const dep_summary = util.checkDependencies(b, target.result, &dependency_specs);
+
+    // 📊 Show dependency check results
+    dep_summary.printSummary();
+
+    // 🚨 Exit if any required dependencies are missing
+    if (!dep_summary.allSatisfied()) {
+        std.debug.print("💥 Build cannot continue - required dependencies missing!\n", .{});
+        std.process.exit(1);
     }
-}
 
-fn createDawnModule(
-    b: *std.Build,
-    dawn_dep: *std.Build.Dependency,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Module {
-    const dawn_module = b.createModule(.{
-        .root_source_file = b.path("src/dawn/dawn.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // 🎯 Get the Dawn dependency (we know it exists from the check above)
+    var dawn_dep: ?*std.Build.Dependency = null;
+    var zigwin32_dep: ?*std.Build.Dependency = null;
 
-    // Add include path for webgpu.h
-    dawn_module.addIncludePath(dawn_dep.path("windows-x64/include"));
-    
-    // Link the library to the module itself
-    dawn_module.addLibraryPath(dawn_dep.path("windows-x64/lib"));
-    dawn_module.linkSystemLibrary("webgpu_dawn", .{});
-    dawn_module.link_libc = true;
+    for (dep_summary.results) |result| {
+        if (std.mem.eql(u8, result.name, "dawn") and result.status == .satisfied) {
+            dawn_dep = result.dependency;
+        } else if (std.mem.eql(u8, result.name, "zigwin32") and result.status == .satisfied) {
+            zigwin32_dep = result.dependency;
+        }
+    }
 
-    return dawn_module;
-}
-
-// ============================================================================
-// Main Executable
-// ============================================================================
-
-fn createMainExecutable(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-    dawn_module: *std.Build.Module,
-) *std.Build.Step.Compile {
+    // Build executable
     const exe = b.addExecutable(.{
-        .name = "dawn-test",
+        .name = "ngixi-dawn",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
@@ -83,74 +57,64 @@ fn createMainExecutable(
         }),
     });
 
-    // Add Dawn module
-    exe.root_module.addImport("dawn", dawn_module);
-    
-    // Add include path for webgpu.h (needed for @cImport in dawn module)
-    const dawn_dep = b.dependency("dawn", .{});
-    exe.root_module.addIncludePath(dawn_dep.path("windows-x64/include"));
-    
-    exe.linkLibC();
-    return exe;
-}
+    // Configure Dawn paths (we know dawn_dep exists)
+    configureDawnPaths(b, exe, dawn_dep.?, target.result);
 
-fn setupRunStep(b: *std.Build, exe: *std.Build.Step.Compile) void {
-    const run_cmd = b.addRunArtifact(exe);
-    run_cmd.step.dependOn(b.getInstallStep());
-    run_cmd.cwd = b.path("zig-out/bin");
-
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
+    // Add platform-specific dependencies
+    if (zigwin32_dep) |zigwin32| {
+        exe.root_module.addImport("win32", zigwin32.module("win32"));
     }
 
-    const run_step = b.step("run", "Run the main application");
+    b.installArtifact(exe);
+
+    // Run step
+    const run_cmd = b.addRunArtifact(exe);
+    run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| run_cmd.addArgs(args);
+
+    const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
 }
 
-// ============================================================================
-// Dawn Test Executable
-// ============================================================================
-
-fn createDawnTestExecutable(
+fn configureDawnPaths(
     b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-    dawn_module: *std.Build.Module,
-) *std.Build.Step.Compile {
-    const test_exe = b.addExecutable(.{
-        .name = "test-dawn",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/dawn/test_dawn.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
+    exe: *std.Build.Step.Compile,
+    dawn_dep: *std.Build.Dependency,
+    target: std.Target,
+) void {
+    // Add include and lib paths
+    exe.addIncludePath(dawn_dep.path("include"));
+    exe.addLibraryPath(dawn_dep.path("lib"));
 
-    // Import the dawn module
-    test_exe.root_module.addImport("dawn", dawn_module);
-    
-    // Add include path for webgpu.h (needed for @cImport in dawn module)
-    const dawn_dep = b.dependency("dawn", .{});
-    test_exe.root_module.addIncludePath(dawn_dep.path("windows-x64/include"));
-    
-    test_exe.linkLibC();
+    // Platform-specific configuration
+    switch (target.os.tag) {
+        .windows => {
+            exe.linkSystemLibrary("webgpu_dawn");
 
-    return test_exe;
-}
+            // Install DLLs
+            const dlls = [_][]const u8{ "webgpu_dawn.dll", "d3dcompiler_47.dll", "dxcompiler.dll", "dxil.dll" };
+            for (dlls) |dll| {
+                const install_dll = b.addInstallBinFile(dawn_dep.path(b.fmt("bin/{s}", .{dll})), dll);
+                exe.step.dependOn(&install_dll.step);
+            }
 
-fn setupTestStep(b: *std.Build, test_exe: *std.Build.Step.Compile) void {
-    const test_cmd = b.addRunArtifact(test_exe);
-    test_cmd.cwd = b.path("zig-out/bin");
+            exe.linkSystemLibrary("user32");
+            exe.linkSystemLibrary("gdi32");
+        },
+        .linux => {
+            exe.linkSystemLibrary("webgpu_dawn");
+            exe.linkSystemLibrary("X11");
+            exe.linkSystemLibrary("pthread");
+        },
+        .macos => {
+            exe.linkSystemLibrary("webgpu_dawn");
+            exe.linkFramework("Cocoa");
+            exe.linkFramework("QuartzCore");
+            exe.linkFramework("Metal");
+        },
+        else => {},
+    }
 
-    const test_step = b.step("test", "Run Dawn DLL linkage test");
-    test_step.dependOn(&test_cmd.step);
-}
-
-// ============================================================================
-// Utility Steps
-// ============================================================================
-
-fn setupFetchStep(b: *std.Build) void {
-    const fetch_step = b.step("fetch", "Fetch and install Dawn DLLs");
-    fetch_step.dependOn(b.getInstallStep());
+    exe.linkLibC();
+    exe.linkLibCpp();
 }

@@ -5,13 +5,15 @@
     .minimum_zig_version = "0.15.0",
 
     .dependencies = .{
-        .dawn = .{
-            .url = "https://github.com/ngixi/ngixi-builds/releases/download/dawn-v20251028.174717/dawn-v20251028.174717.tar.gz",
-            .hash = "dawn-2025.10.28-AAAAANWL6gEYT-BOQapHMwSg1W5toof42wtS_r1Afbyj",
+        .dawn_windows_x86_64 = .{
+            .url = "https://github.com/ngixi/ngixi-builds/releases/download/dawn-v20251028.174717/dawn_shared_win_x86_64.tar.gz",
+            .hash = "dawn-2025.10.28-AAAAANaL6gFN5mYFsflVON8Ct2q1NZ4UCpyseuk3VbDD",
+            .lazy = true,
         },
         .zigwin32 = .{
             .url = "git+https://github.com/ngixi/ngixi-builds.git?ref=zig-win32-1.0.1#8a5c2436d0c76b95fdea6c14f88d0dd8cab6b570",
             .hash = "zigwin32-25.0.28-preview-AAAAAICM5AMResOGQnQ85mfe60TTOQeMtt7GRATUOKoP",
+            .lazy = true,
         },
     },
 

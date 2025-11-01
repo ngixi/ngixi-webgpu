@@ -46,7 +46,7 @@ pub fn enumerateFeatures(self: @This(), allocator: std.mem.Allocator) ![]enums.F
     var supported: raw.WGPUSupportedFeatures = undefined;
     raw.wgpuAdapterGetFeatures(self.handle, &supported);
     defer raw.wgpuSupportedFeaturesFreeMembers(supported);
-    
+
     if (supported.featureCount == 0) return &[_]enums.FeatureName{};
 
     const features = try allocator.alloc(enums.FeatureName, supported.featureCount);

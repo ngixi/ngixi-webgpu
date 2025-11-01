@@ -295,7 +295,7 @@ pub const FeatureName = enum(u32) {
     dawn_internal_usages = 0x00050000,
     dawn_multi_planar_formats = 0x00050001,
     dawn_native = 0x00050002,
-    
+
     // Unknown/unsupported features
     unknown = 0xFFFFFFFF,
     _,

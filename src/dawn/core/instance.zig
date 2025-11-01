@@ -35,7 +35,7 @@ pub fn requestAdapter(self: @This(), options: RequestAdapterOptions) !Adapter {
     var raw_opts = options.toRaw();
     const adapter_handle = try sync.requestAdapterSync(self.handle, &raw_opts);
 
-    return Adapter{ 
+    return Adapter{
         .handle = adapter_handle,
         .instance = self.handle,
     };

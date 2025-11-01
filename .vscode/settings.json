@@ -14,7 +14,7 @@
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
     "*.zig": "${capture}.exe,${capture}.o,${capture}.obj",
-    "build.zig": "build.zig.zon,zig-cache,zig-out",
+    "build.zig": "build.zig.zon,build.*.zon, build.*.zig",
     "*.md": "${capture}.html",
     "*.ts": "${capture}.js,${capture}.d.ts.map,${capture}.d.ts,${capture}.js.map",
     "*.js": "${capture}.js.map,${capture}.min.js,${capture}.d.ts",
@@ -40,5 +40,20 @@
   },
   "editor.formatOnSave": true,
   "editor.insertSpaces": true,
-  "editor.tabSize": 4
+  "editor.tabSize": 4,
+  "editor.foldingStrategy": "auto",
+  "[zig]": {
+    "editor.folding": true,
+    "editor.foldingImportsByDefault": false,
+    "editor.foldingStrategy": "indentation"
+  },
+  "explicitFolding.rules": {
+    "*.zig": [
+      {
+        "name": "Zig Regions",
+        "beginRegex": "^\\s*//\\s*#region\\s*(.*?)\\s*$",
+        "endRegex": "^\\s*//\\s*#endregion\\s*(.*?)\\s*$"
+      }
+    ]
+  }
 }
