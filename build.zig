@@ -1,12 +1,13 @@
 const std = @import("std");
-const util = @import("build.util.zig");
+const util = @import("snippets/build.util.zig");
+const build_manifest = @import("build.zig.zon");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
     // 📋 Uncomment to see available dependencies during build
-    // util.printAvailableDependencies();
+    // util.printAvailableDependencies(build_manifest);
 
     // � Define our dependency requirements
     const dependency_specs = [_]util.DependencySpec{
@@ -24,7 +25,7 @@ pub fn build(b: *std.Build) void {
     };
 
     // 🛡️ Check all dependencies comprehensively
-    const dep_summary = util.checkDependencies(b, target.result, &dependency_specs);
+    const dep_summary = util.checkDependencies(b, build_manifest, target.result, &dependency_specs);
 
     // 📊 Show dependency check results
     dep_summary.printSummary();

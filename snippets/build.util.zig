@@ -1,5 +1,4 @@
 const std = @import("std");
-const build_manifest = @import("build.zig.zon");
 
 // ===================================================================
 // 🎯 ZIG BUILD UTILITY SYSTEM
@@ -70,6 +69,7 @@ pub fn getPlatformDependency(b: *std.Build, dep_prefix: []const u8, target: std.
 
 pub fn checkDependencies(
     b: *std.Build,
+    build_manifest: anytype,
     target: std.Target,
     specs: []const DependencySpec,
 ) DependencyCheckSummary {
@@ -108,7 +108,7 @@ pub fn checkDependencies(
             }
         }
 
-        if (dependencyExists(resolved_name)) {
+        if (dependencyExists(build_manifest, resolved_name)) {
             if (b.lazyDependency(resolved_name, .{})) |dep| {
                 results[i] = DependencyResult{
                     .name = spec.name,
@@ -146,7 +146,7 @@ pub fn checkDependencies(
 // #endregion
 
 // #region Debug Utilities
-pub fn printAvailableDependencies() void {
+pub fn printAvailableDependencies(build_manifest: anytype) void {
     std.debug.print("\n📦 Build Manifest Analysis:\n", .{});
 
     if (@hasField(@TypeOf(build_manifest), "name")) {
@@ -173,7 +173,7 @@ pub fn printAvailableDependencies() void {
 // #endregion Debug Utilities
 
 // #region Internal Helpers
-fn dependencyExists(dep_name: []const u8) bool {
+fn dependencyExists(build_manifest: anytype, dep_name: []const u8) bool {
     if (!@hasField(@TypeOf(build_manifest), "dependencies")) {
         return false;
     }
