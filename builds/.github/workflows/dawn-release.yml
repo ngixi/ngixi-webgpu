@@ -1,0 +1,47 @@
+name: Release Dawn Binaries
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    uses: ./.github/workflows/dawn-build.windows.yml
+
+  release:
+    runs-on: lin-build
+    needs: build-windows
+    steps:
+      - name: Checkout ngixi-builds repo
+        uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - uses: ./.github/actions/setup-build
+        with:
+          build-dir: dawn-build
+
+      - name: Download Dawn artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dawn-windows-assets
+
+      - name: List downloaded files
+        shell: bash
+        run: |
+          pwd
+          ls -la
+          find . -name "*.tar.gz"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: dawn-${{ vars.DAWN_TAG }}
+          name: Dawn ${{ vars.DAWN_TAG }}
+          files: dawn_shared_win_x86_64.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

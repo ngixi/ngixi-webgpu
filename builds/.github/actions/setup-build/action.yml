@@ -1,0 +1,24 @@
+name: 'Setup Build'
+description: 'Setup build environment and create build directory'
+
+inputs:
+  build-dir:
+    description: 'Build directory name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure Git
+      shell: pwsh
+      run: |
+        git config --global user.email "build@ngixi.local"
+        git config --global user.name "NGIXI Build Bot"
+        git config --global depot-tools.allowGlobalGitConfig false
+
+    - name: Create build directory
+      shell: pwsh
+      run: |
+        if (-not (Test-Path ${{ inputs.build-dir }})) {
+          New-Item -ItemType Directory -Path ${{ inputs.build-dir }}
+        }
