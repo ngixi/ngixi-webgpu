@@ -1,0 +1,10 @@
+name: Release SDL3 Binaries
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Workflow disabled"
