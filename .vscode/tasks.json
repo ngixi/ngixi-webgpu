@@ -1,0 +1,27 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Push Snippets",
+            "type": "shell",
+            "command": "git",
+            "args": [
+                "subtree",
+                "push",
+                "--prefix=snippets",
+                "git@github.com-mannsion:mannsion/zig-snippets.git",
+                "main"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}
